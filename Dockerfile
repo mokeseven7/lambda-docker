@@ -1,13 +1,7 @@
 #Lambda base image Amazon linux
 FROM public.ecr.aws/lambda/provided as builder 
-
 # Set desired PHP Version
-ARG PHP_VERSION="8.2.2"
-ARG PHP_PREFIX="/opt/php8/"
-ARG PHP_BINDIR="/opt/php8/bin/"
-ARG PHP_BINPATH="/opt/php8/bin/php"
-
-
+ARG php_version="8.0.2"
 RUN yum clean all && \
     yum install -y autoconf \
                 bison \
@@ -25,48 +19,48 @@ RUN yum clean all && \
                 zip \
                 re2c \
                 sqlite-devel \
-                oniguruma-devel 
+                oniguruma-devel
 
 # Download the PHP source, compile, and install both PHP and Composer
-RUN curl -sL https://github.com/php/php-src/archive/php-${PHP_VERSION}.tar.gz | tar -xvz && \
-    cd php-src-php-${PHP_VERSION} && \
+RUN curl -sL https://github.com/php/php-src/archive/php-${php_version}.tar.gz | tar -xvz && \
+    cd php-src-php-${php_version} && \
     ./buildconf --force && \
-    ./configure --prefix=/opt/php8/ \
-        --with-openssl \ 
-        --with-curl \
-        --with-zlib \
-        --without-pear \
-        --enable-bcmath \
-        --with-bz2 \
-        --enable-mbstring \
-        --with-mysqli && \
-        make -j 5 && \
-        make install && \
-        /opt/php8/bin/php -v && \
-        curl -sS https://getcomposer.org/installer | /opt/php8/bin/php -- --install-dir=/opt/php8/bin/ --filename=composer
+    ./configure --prefix=/var/lang/ --with-openssl --with-curl --with-zlib --with-pear --enable-bcmath --enable-sockets --with-bz2 --enable-mbstring --with-pdo-mysql --with-mysqli  && \
+    make -j 12 && \
+    make install && \
+    /var/lang/bin/php -v && \
+    curl -sS https://getcomposer.org/installer | /var/lang/bin/php -- --install-dir=/var/lang/bin/ --filename=composer
 
-# Prepare runtime files
-RUN mkdir -p /lambda-php-runtime/bin && \
-    cp /opt/php8/bin/php /lambda-php-runtime/bin/php
-
-COPY runtime/bootstrap /lambda-php-runtime/
-RUN chmod 0755 /lambda-php-runtime/bootstrap
+RUN printf "yes\nyes\nyes\nyes\n" | /var/lang/bin/pecl install swoole
 
 # Install Guzzle, prepare vendor files
 RUN mkdir /lambda-php-vendor && \
     cd /lambda-php-vendor && \
-    /opt/php8/bin/php /opt/php8/bin/composer require guzzlehttp/guzzle
+    /var/lang/bin/php /var/lang/bin/composer require guzzlehttp/guzzle
 
 
 ###### Create runtime image ######
-FROM public.ecr.aws/lambda/provided as runtime
+FROM public.ecr.aws/lambda/provided:al2 as runtime
+
+RUN yum install -y oniguruma-devel
+
 # Layer 1: PHP Binaries
-COPY --from=builder /opt/php8/ /var/lang
+COPY --from=builder /var/lang /var/lang
+
+
+
 # Layer 2: Runtime Interface Client
-COPY --from=builder /lambda-php-runtime /var/runtime
+# Prepare runtime files
+COPY runtime/bootstrap /var/runtime
+RUN chmod 0755 /var/runtime/bootstrap
+
 # Layer 3: Vendor
 COPY --from=builder /lambda-php-vendor/vendor /opt/vendor
 
+# You chose your lambda function
+# to copy inside the container
 COPY src/ /var/task/
+
+RUN /var/lang/bin/php -v
 
 CMD [ "index" ]

@@ -2,7 +2,6 @@
 
 <?php
 
-
 // This invokes Composer's autoloader so that we'll be able to use Guzzle and any other 3rd party libraries we need.
 $vendor_dir = '/opt/vendor';
 require $vendor_dir . '/autoload.php';
@@ -13,8 +12,8 @@ do {
     $request = getNextRequest();
 
     // Obtain the function name from the _HANDLER environment variable and ensure the function's code is available.
-    $handlerFunction = $_ENV['_HANDLER'];
-    require_once $_ENV['LAMBDA_TASK_ROOT'] . '/' . $handlerFunction . '.php';
+    $handlerFunction = getenv('_HANDLER');
+    require_once getenv('LAMBDA_TASK_ROOT') . '/' . $handlerFunction . '.php';
 
     // Execute the desired function and obtain the response.
     $response = $handlerFunction($request['payload']);
@@ -26,7 +25,7 @@ do {
 function getNextRequest()
 {
     $client = new \GuzzleHttp\Client();
-    $response = $client->get('http://' . $_ENV['AWS_LAMBDA_RUNTIME_API'] . '/2018-06-01/runtime/invocation/next');
+    $response = $client->get('http://' . getenv('AWS_LAMBDA_RUNTIME_API') . '/2018-06-01/runtime/invocation/next');
 
     return [
       'invocationId' => $response->getHeader('Lambda-Runtime-Aws-Request-Id')[0],
@@ -38,7 +37,7 @@ function sendResponse($invocationId, $response)
 {
     $client = new \GuzzleHttp\Client();
     $client->post(
-    'http://' . $_ENV['AWS_LAMBDA_RUNTIME_API'] . '/2018-06-01/runtime/invocation/' . $invocationId . '/response',
-       ['body' => $response]
+        'http://' . getenv('AWS_LAMBDA_RUNTIME_API') . '/2018-06-01/runtime/invocation/' . $invocationId . '/response',
+        ['body' => $response]
     );
 }
