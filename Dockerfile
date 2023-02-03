@@ -22,13 +22,14 @@ RUN yum clean all && \
                 openssl-devel \
                 tar \
                 unzip \
-                zip
+                zip \
+                re2c
 
 # Download the PHP source, compile, and install both PHP and Composer
 RUN curl -sL https://github.com/php/php-src/archive/php-${PHP_VERSION}.tar.gz | tar -xvz && \
     cd php-src-php-${PHP_VERSION} && \
     ./buildconf --force && \
-    ./configure --prefix=/opt/php8 \
+    ./configure --prefix=/opt/php8/ \
         --with-openssl \ 
         --with-curl \
         --with-zlib \
