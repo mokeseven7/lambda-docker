@@ -42,12 +42,12 @@ RUN curl -sL https://github.com/php/php-src/archive/php-${PHP_VERSION}.tar.gz | 
         --with-mysqli && \
         make -j 5 && \
         make install && \
-        $PHP_BINDIR -v && \
-        curl -sS https://getcomposer.org/installer | $PHP_BINPATH -- --install-dir=$PHP_BINDIR --filename=composer
+        /opt/php8/bin/php -v && \
+        curl -sS https://getcomposer.org/installer | /opt/php8/bin/php -- --install-dir=/opt/php8/bin/ --filename=composer
 
 # Prepare runtime files
 RUN mkdir -p /lambda-php-runtime/bin && \
-    cp $PHP_BINDIR /lambda-php-runtime/bin/php
+    cp /opt/php8/bin/php /lambda-php-runtime/bin/php
 
 COPY runtime/bootstrap /lambda-php-runtime/
 RUN chmod 0755 /lambda-php-runtime/bootstrap
@@ -55,7 +55,7 @@ RUN chmod 0755 /lambda-php-runtime/bootstrap
 # Install Guzzle, prepare vendor files
 RUN mkdir /lambda-php-vendor && \
     cd /lambda-php-vendor && \
-    $PHP_BINDIR /opt/php-8-bin/bin/composer require guzzlehttp/guzzle
+    /opt/php8/bin/php /opt/php8/bin/composer require guzzlehttp/guzzle
 
 
 ###### Create runtime image ######
