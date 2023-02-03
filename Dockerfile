@@ -25,8 +25,8 @@ RUN yum clean all && \
                 zip \
                 re2c \
                 sqlite-devel \
-                oniguruma 
-                
+                oniguruma-devel 
+
 # Download the PHP source, compile, and install both PHP and Composer
 RUN curl -sL https://github.com/php/php-src/archive/php-${PHP_VERSION}.tar.gz | tar -xvz && \
     cd php-src-php-${PHP_VERSION} && \
