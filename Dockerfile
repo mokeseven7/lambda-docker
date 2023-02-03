@@ -39,12 +39,11 @@ RUN curl -sL https://github.com/php/php-src/archive/php-${PHP_VERSION}.tar.gz | 
         --enable-bcmath \
         --with-bz2 \
         --enable-mbstring \
-        --with-mysqli
-
-RUN make -j 5 && \
-    make install && \
-    $PHP_BINDIR -v && \
-    curl -sS https://getcomposer.org/installer | $PHP_BINPATH -- --install-dir=$PHP_BINDIR --filename=composer
+        --with-mysqli && \
+        make -j 5 && \
+        make install && \
+        $PHP_BINDIR -v && \
+        curl -sS https://getcomposer.org/installer | $PHP_BINPATH -- --install-dir=$PHP_BINDIR --filename=composer
 
 # Prepare runtime files
 RUN mkdir -p /lambda-php-runtime/bin && \
