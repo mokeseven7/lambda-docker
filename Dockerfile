@@ -61,7 +61,7 @@ RUN mkdir /lambda-php-vendor && \
 ###### Create runtime image ######
 FROM public.ecr.aws/lambda/provided as runtime
 # Layer 1: PHP Binaries
-COPY --from=builder $PHP_PREFIX /var/lang
+COPY --from=builder /opt/php8/ /var/lang
 # Layer 2: Runtime Interface Client
 COPY --from=builder /lambda-php-runtime /var/runtime
 # Layer 3: Vendor
@@ -69,4 +69,4 @@ COPY --from=builder /lambda-php-vendor/vendor /opt/vendor
 
 COPY src/ /var/task/
 
-CMD [ "authorizer" ]
+CMD [ "index" ]
