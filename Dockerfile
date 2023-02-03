@@ -24,6 +24,8 @@ RUN yum clean all && \
                 unzip \
                 zip \
                 re2c \
+                sqlite \
+                sqlite3 \
                 sqlite3-dev
 
 # Download the PHP source, compile, and install both PHP and Composer
