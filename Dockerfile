@@ -23,7 +23,8 @@ RUN yum clean all && \
                 tar \
                 unzip \
                 zip \
-                re2c
+                re2c \
+                sqlite3-dev
 
 # Download the PHP source, compile, and install both PHP and Composer
 RUN curl -sL https://github.com/php/php-src/archive/php-${PHP_VERSION}.tar.gz | tar -xvz && \
