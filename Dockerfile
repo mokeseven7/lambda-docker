@@ -29,7 +29,7 @@ RUN curl -sL https://github.com/php/php-src/archive/php-${PHP_VERSION}.tar.gz | 
     cd php-src-php-${PHP_VERSION} && \
     ./buildconf --force
     
-RUN ./configure --prefix=${PHP_PREFIX} \
+RUN ./configure --prefix=$PHP_PREFIX \
         --with-openssl \ 
         --with-curl \
         --with-zlib \
@@ -41,12 +41,12 @@ RUN ./configure --prefix=${PHP_PREFIX} \
 
 RUN make -j 5 && \
     make install && \
-    ${PHP_BINDIR} -v && \
-    curl -sS https://getcomposer.org/installer | ${PHP_BINPATH} -- --install-dir=${PHP_BINDIR} --filename=composer
+    $PHP_BINDIR -v && \
+    curl -sS https://getcomposer.org/installer | $PHP_BINPATH -- --install-dir=$PHP_BINDIR --filename=composer
 
 # Prepare runtime files
 RUN mkdir -p /lambda-php-runtime/bin && \
-    cp ${PHP_BINDIR} /lambda-php-runtime/bin/php
+    cp $PHP_BINDIR /lambda-php-runtime/bin/php
 
 COPY runtime/bootstrap /lambda-php-runtime/
 RUN chmod 0755 /lambda-php-runtime/bootstrap
@@ -54,13 +54,13 @@ RUN chmod 0755 /lambda-php-runtime/bootstrap
 # Install Guzzle, prepare vendor files
 RUN mkdir /lambda-php-vendor && \
     cd /lambda-php-vendor && \
-    ${PHP_BINDIR} /opt/php-8-bin/bin/composer require guzzlehttp/guzzle
+    $PHP_BINDIR /opt/php-8-bin/bin/composer require guzzlehttp/guzzle
 
 
 ###### Create runtime image ######
 FROM public.ecr.aws/lambda/provided as runtime
 # Layer 1: PHP Binaries
-COPY --from=builder ${PHP_PREFIX} /var/lang
+COPY --from=builder $PHP_PREFIX /var/lang
 # Layer 2: Runtime Interface Client
 COPY --from=builder /lambda-php-runtime /var/runtime
 # Layer 3: Vendor
