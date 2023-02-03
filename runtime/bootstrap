@@ -1,0 +1,55 @@
+#!/opt/bin/php
+<?php
+
+// This invokes Composer's autoloader so that we'll be able to use Guzzle and any other 3rd party libraries we need.
+// Depending on the configured runtime, its location may vary
+
+
+
+if ( file_exists(__DIR__ . '/vendor/autoload.php' ) ) {
+	require __DIR__ . '/vendor/autoload.php';
+} else {
+	require '/opt/vendor/autoload.php';
+}
+
+// Initialize signing-key manager, and retrieve the current JWT signing keys from Okta
+$keyManager = \Keymaker\Source\Manager::instance();
+if ( ! $keyManager->updateKeys() ) {
+	die();
+}
+
+// This is the request processing loop. Barring unrecoverable failure, this loop runs until the environment shuts down.
+do {
+
+	// Ask the runtime API for a request to handle.
+	$request = getNextRequest();
+
+	// Obtain the function name from the _HANDLER environment variable and ensure the function's code is available.
+	require_once $_ENV['LAMBDA_TASK_ROOT'] . '/src/authorizer.php';
+
+	// Execute the desired function and obtain the response.
+	$response = \Keymaker\Source\authorizer($request['payload']);
+
+	// Submit the response back to the runtime API.
+	sendResponse($request['invocationId'], $response);
+} while (true);
+
+function getNextRequest()
+{
+	$client = new \GuzzleHttp\Client();
+	$response = $client->get('http://' . $_ENV['AWS_LAMBDA_RUNTIME_API'] . '/2018-06-01/runtime/invocation/next');
+
+	return [
+		'invocationId' => $response->getHeader('Lambda-Runtime-Aws-Request-Id')[0],
+		'payload' => json_decode((string) $response->getBody(), true)
+	];
+}
+
+function sendResponse($invocationId, $response)
+{
+	$client = new \GuzzleHttp\Client();
+	$client->post(
+		'http://' . $_ENV['AWS_LAMBDA_RUNTIME_API'] . '/2018-06-01/runtime/invocation/' . $invocationId . '/response',
+		['body' => $response]
+	);
+}

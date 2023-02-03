@@ -1,0 +1,25 @@
+{
+    "name": "keymaker/source",
+    "description": "php lambda layer",
+    "type": "library",
+    "license": "mit",
+    "autoload": {
+        "psr-4": {
+            "Keymaker\\Source\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Michael McGrath",
+            "email": "mokeseven7@gmail.com"
+        }
+    ],
+    "require": {
+        "aws/aws-sdk-php": "^3.258",
+        "guzzlehttp/guzzle": "^7.5",
+        "firebase/php-jwt": "^6.3",
+        "codercat/jwk-to-pem": "^1.1",
+        "ext-curl": "*",
+        "ext-json": "*"
+    }
+}
