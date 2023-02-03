@@ -19,7 +19,6 @@ jobs:
     - name: Build Lambda Docker Image
       run: |
         docker build . --tag ghcr.io/mokeseven7/lambda-docker:latest
-        docker run ghcr.io/mokeseven7/lambda-docker:latest
         docker push ghcr.io/mokeseven7/lambda-docker:latest
 
 
